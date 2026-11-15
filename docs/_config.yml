@@ -1,0 +1,9 @@
+title: TitanRL 学习手册
+description: 从公开源码理解 RL 后训练系统，并设计可复现的性能实验
+lang: zh-CN
+theme: jekyll-theme-primer
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default

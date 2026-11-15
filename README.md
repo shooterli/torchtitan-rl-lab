@@ -1,5 +1,7 @@
 # TitanRL rollout scheduling study
 
+中文学习资料见 [TitanRL 学习手册](docs/index.md)，涵盖 rollout 调度、策略滞后和吞吐测量。
+
 ## Question
 
 When does overlapping rollout generation with policy updates improve end-to-end throughput, and what policy lag does that overlap introduce?
