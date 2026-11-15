@@ -1,0 +1,31 @@
+diff --git a/torchtitan/rl/controller/controller.py b/torchtitan/rl/controller/controller.py
+index caaae65..f8ef903 100644
+--- a/torchtitan/rl/controller/controller.py
++++ b/torchtitan/rl/controller/controller.py
+@@ -290,6 +290,9 @@ class Controller(Configurable):
+         generator: Generator.Config
+         """Generator actor configuration (generator model, vLLM engine, sampling)."""
+ 
++        generator_max_num_seqs: int | None = None
++        """Fixed generator sequence cap per DP rank. None derives it from rollout concurrency."""
++
+         num_generators: int = 1
+         """Number of generator replicas to spawn as separate proc meshes.
+ 
+@@ -598,9 +601,13 @@ class Controller(Configurable):
+         # Ceiling (not target) for the generator's max_num_seqs: the per-generator
+         # upper bound on concurrently scheduled sequences. vLLM may admit fewer if KV
+         # is tight; this also sets CUDA-graph capture sizes.
+-        max_num_seqs = min(
+-            math.ceil(rollout_concurrency / num_generator_dp_shards), 512
+-        )
++        max_num_seqs = config.generator_max_num_seqs
++        if max_num_seqs is None:
++            max_num_seqs = min(
++                math.ceil(rollout_concurrency / num_generator_dp_shards), 512
++            )
++        if max_num_seqs < 1:
++            raise ValueError("generator_max_num_seqs must be positive")
+ 
+         logger.info(
+             "max_num_seqs=%d per generator (rollout_concurrency=%d / generator_dp_shards=%d)",
