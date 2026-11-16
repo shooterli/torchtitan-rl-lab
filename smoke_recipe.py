@@ -15,6 +15,9 @@ def _smoke(target_offpolicy_steps: int) -> Controller.Config:
     config.metrics.enable_wandb = False
     config.metrics.console_log_keys_train = [
         "timing/step/total",
+        "timing/step/blocking_",
+        "timing/weight_sync/",
+        "perf/trainer/step_time_ratio/batch",
         "perf/trainer/tokens_per_second_full_step",
         "train_batch/policy_age",
         "rollout_reward/_mean",

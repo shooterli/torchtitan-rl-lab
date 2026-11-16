@@ -112,3 +112,9 @@ The patch targets public TorchTitan source. See the [upstream license](https://g
 - The patch applies to the pinned public source. A local check of the cap calculation reproduced 64 and 128 for the stock pair and 128 for both fixed arms. The analyzer accepted both fixed-cap run names with synthetic JSONL. Runtime verification of the resolved vLLM settings still needs a CUDA run.
 - No new release in the review window. Main merged an [opt-in weight transfer path](https://github.com/pytorch/torchtitan/pull/5997). Weight transfer time can affect the benefit of overlap, so both arms use the same v0.4.0 transport.
 - Weekly summary. The experiment has paired run recipes, a fixed-cap control, and a local throughput analyzer tested with synthetic logs. Next week, run the paired six-GPU smoke test when suitable CUDA resources are available and inspect the cap, token counter, step time, and policy age before planning a longer measurement.
+
+### 2026-11-16
+
+- Traced the v0.4.0 weight publication and load path, including the two trainer wait points and the condition for releasing rollout group slots. Added a [weight sync walkthrough](docs/weight-sync.md) with a hand-calculated timeline and exposed the timing metrics in both smoke-test arms.
+- No new release. Upstream main moved [Verifiers group execution to rollout workers](https://github.com/pytorch/torchtitan/pull/5511). The alphabet-sort smoke test uses native rollouts, so the change does not affect the pinned comparison.
+- The walkthrough uses public source and an illustrative timeline. GPU measurements are pending. The next run should check which portion of weight transfer falls inside explicit waits and whether batch wait changes across arms.
