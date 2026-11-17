@@ -118,3 +118,8 @@ The patch targets public TorchTitan source. See the [upstream license](https://g
 - Traced the v0.4.0 weight publication and load path, including the two trainer wait points and the condition for releasing rollout group slots. Added a [weight sync walkthrough](docs/weight-sync.md) with a hand-calculated timeline and exposed the timing metrics in both smoke-test arms.
 - No new release. Upstream main moved [Verifiers group execution to rollout workers](https://github.com/pytorch/torchtitan/pull/5511). The alphabet-sort smoke test uses native rollouts, so the change does not affect the pinned comparison.
 - The walkthrough uses public source and an illustrative timeline. GPU measurements are pending. The next run should check which portion of weight transfer falls inside explicit waits and whether batch wait changes across arms.
+
+### 2026-11-17
+
+- No new release. Main merged [#6097](https://github.com/pytorch/torchtitan/pull/6097), which stages local shards on the trainer and unpacks noncontiguous pieces on the generator. Added a [walkthrough of the layout mismatch](docs/weight-transport.md) with a checked 4×4 example and the upstream microbenchmark's scope.
+- The new transport is a separate experiment variable. Keep TorchStore and v0.4.0 in the scheduling comparison. No local GPU measurements yet.

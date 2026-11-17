@@ -31,3 +31,5 @@ title: 权重同步耗时
 以第 N 步完成更新的时刻为零点。假设 push 从 0 到 1.0 秒，pull 从 1.0 到 3.0 秒，槽位随即释放。第 N+1 步在 1.8 秒走到 push 等待点，此时 push 已完成。它在 2.8 秒走到 pull 等待点，还需等 0.2 秒。此时两项后台耗时合计 3.0 秒，两项显式等待合计 0.2 秒。这个算例只说明指标之间的关系。
 
 如果显式等待很短但 `step_time_ratio/batch` 明显上升，可以结合生成器吞吐与 group 就绪时间排查。权重加载结束前，新 group 可能还进不了缓冲区，因而一部分影响会出现在等 batch 的时间里。当前结论来自公开源码与算例，GPU 样本待采集。 [槽位释放条件](https://github.com/pytorch/torchtitan/blob/v0.4.0/torchtitan/rl/controller/controller.py#L1280-L1292)
+
+如果训练器和生成器使用不同的分片布局，传输阶段还要决定在哪里重排张量。 [下一篇：跨布局的权重传输](weight-transport.md)
