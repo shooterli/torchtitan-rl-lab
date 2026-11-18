@@ -123,3 +123,9 @@ The patch targets public TorchTitan source. See the [upstream license](https://g
 
 - No new release. Main merged [#6097](https://github.com/pytorch/torchtitan/pull/6097), which stages local shards on the trainer and unpacks noncontiguous pieces on the generator. Added a [walkthrough of the layout mismatch](docs/weight-transport.md) with a checked 4×4 example and the upstream microbenchmark's scope.
 - The new transport is a separate experiment variable. Keep TorchStore and v0.4.0 in the scheduling comparison. No local GPU measurements yet.
+
+### 2026-11-18
+
+- Main merged [#5995](https://github.com/pytorch/torchtitan/pull/5995), which rejects unsupported FLUX TP, EP, and PP configurations early. Added a [configuration walkthrough](docs/flux-parallelism.md) covering per-layout checks, model-build-time parallelism, and a verified BF16 weight-memory example.
+- No new release. Main also [changed the default RL state-dict transport](https://github.com/pytorch/torchtitan/pull/6125). This reinforces keeping an exact source revision and transport in the paired scheduling experiment.
+- Reviewed public code and checked the memory arithmetic. Full upstream CPU tests and GPU measurements remain pending. Next, connect model layout checks to a saved run manifest before comparing measured performance.

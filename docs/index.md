@@ -13,5 +13,6 @@ title: TitanRL 学习手册
 | [吞吐测量与对照实验](throughput.md) | 训练 token/s 和生成 token/s 分别测什么？如何只改变调度深度？ |
 | [权重同步耗时](weight-sync.md) | 一次权重传输花了多久？训练器实际等了多久？ |
 | [跨布局的权重传输](weight-transport.md) | 训练器和生成器的分片方向不同时，在哪里重新拼好权重？ |
+| [FLUX 并行配置检查](flux-parallelism.md) | 为什么填了 TP=2，权重仍可能占满单卡？启动前该验证哪些布局？ |
 
 每篇都可以先用纸笔算例，再跳到对应源码。项目仓库提供双组配置、固定生成并发上限的补丁和吞吐分析脚本。目前已有源码核对和合成日志验证，真实 GPU 测量待进行。 [实验代码和运行方法](https://github.com/shooterli/torchtitan-rl-lab#smoke-test)
