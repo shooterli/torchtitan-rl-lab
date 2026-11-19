@@ -13,6 +13,7 @@ def _smoke(target_offpolicy_steps: int) -> Controller.Config:
     config.rollouter.validation_dataset.max_turns = 1
     config.generator.engine.stat_logger = VllmOtelStatLogger.Config()
     config.metrics.enable_wandb = False
+    config.trainer.debug.save_config_file = "resolved_config.json"
     config.metrics.console_log_keys_train = [
         "timing/step/total",
         "timing/step/blocking_",

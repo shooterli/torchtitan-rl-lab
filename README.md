@@ -129,3 +129,9 @@ The patch targets public TorchTitan source. See the [upstream license](https://g
 - Main merged [#5995](https://github.com/pytorch/torchtitan/pull/5995), which rejects unsupported FLUX TP, EP, and PP configurations early. Added a [configuration walkthrough](docs/flux-parallelism.md) covering per-layout checks, model-build-time parallelism, and a verified BF16 weight-memory example.
 - No new release. Main also [changed the default RL state-dict transport](https://github.com/pytorch/torchtitan/pull/6125). This reinforces keeping an exact source revision and transport in the paired scheduling experiment.
 - Reviewed public code and checked the memory arithmetic. Full upstream CPU tests and GPU measurements remain pending. Next, connect model layout checks to a saved run manifest before comparing measured performance.
+
+### 2026-11-19
+
+- Added a [run-recording guide](docs/run-records.md) and enabled `resolved_config.json` output in all four recipes. Verified the public v0.4.0 save and print paths and checked the recipe settings locally.
+- Upstream remains at v0.4.0. Reviewed [#5662](https://github.com/pytorch/torchtitan/pull/5662), which preserves explicit allocator settings. Record the effective environment when moving to a newer revision.
+- Next: compare the saved configs and derived sequence caps from a CUDA smoke run before collecting a longer measurement window.
