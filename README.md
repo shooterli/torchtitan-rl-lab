@@ -135,3 +135,8 @@ The patch targets public TorchTitan source. See the [upstream license](https://g
 - Added a [run-recording guide](docs/run-records.md) and enabled `resolved_config.json` output in all four recipes. Verified the public v0.4.0 save and print paths and checked the recipe settings locally.
 - Upstream remains at v0.4.0. Reviewed [#5662](https://github.com/pytorch/torchtitan/pull/5662), which preserves explicit allocator settings. Record the effective environment when moving to a newer revision.
 - Next: compare the saved configs and derived sequence caps from a CUDA smoke run before collecting a longer measurement window.
+
+### 2026-11-20
+
+- No new release. Reviewed [activation offload](https://github.com/pytorch/torchtitan/pull/6020) and the [FSDP2 copy-in ordering fix](https://github.com/pytorch/torchtitan/pull/6137). Added a [bandwidth and timing walkthrough](docs/activation-offload.md), pinned to `2377d43`, explaining remat selection and parameter-first H2D ordering.
+- Verified the illustrative overlap calculation and local documentation links. GPU measurements remain pending. The next performance comparison should record FSDP stream mode alongside offload policy.

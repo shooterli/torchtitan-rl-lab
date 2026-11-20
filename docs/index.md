@@ -15,5 +15,6 @@ title: TitanRL 学习手册
 | [跨布局的权重传输](weight-transport.md) | 训练器和生成器的分片方向不同时，在哪里重新拼好权重？ |
 | [FLUX 并行配置检查](flux-parallelism.md) | 为什么填了 TP=2，权重仍可能占满单卡？启动前该验证哪些布局？ |
 | [保存可复现的运行配置](run-records.md) | 两条相同的启动命令，为什么可能跑出不同配置？该保存哪些证据？ |
+| [Activation offload 的带宽与时序](activation-offload.md) | 用 CPU 内存换显存时，为什么 H2D 的先后顺序会影响等待？ |
 
 每篇都可以先用纸笔算例，再跳到对应源码。项目仓库提供双组配置、固定生成并发上限的补丁和吞吐分析脚本。目前已有源码核对和合成日志验证，真实 GPU 测量待进行。 [实验代码和运行方法](https://github.com/shooterli/torchtitan-rl-lab#smoke-test)
