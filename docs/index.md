@@ -16,5 +16,6 @@ title: TitanRL 学习手册
 | [FLUX 并行配置检查](flux-parallelism.md) | 为什么填了 TP=2，权重仍可能占满单卡？启动前该验证哪些布局？ |
 | [保存可复现的运行配置](run-records.md) | 两条相同的启动命令，为什么可能跑出不同配置？该保存哪些证据？ |
 | [Activation offload 的带宽与时序](activation-offload.md) | 用 CPU 内存换显存时，为什么 H2D 的先后顺序会影响等待？ |
+| [截断奖励与部分得分](truncation-reward.md) | 生成被截断时，如何保留部分得分，又给未完成的回答扣分？ |
 
 每篇都可以先用纸笔算例，再跳到对应源码。项目仓库提供双组配置、固定生成并发上限的补丁和吞吐分析脚本。目前已有源码核对和合成日志验证，真实 GPU 测量待进行。 [实验代码和运行方法](https://github.com/shooterli/torchtitan-rl-lab#smoke-test)

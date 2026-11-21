@@ -140,3 +140,9 @@ The patch targets public TorchTitan source. See the [upstream license](https://g
 
 - No new release. Reviewed [activation offload](https://github.com/pytorch/torchtitan/pull/6020) and the [FSDP2 copy-in ordering fix](https://github.com/pytorch/torchtitan/pull/6137). Added a [bandwidth and timing walkthrough](docs/activation-offload.md), pinned to `2377d43`, explaining remat selection and parameter-first H2D ordering.
 - Verified the illustrative overlap calculation and local documentation links. GPU measurements remain pending. The next performance comparison should record FSDP stream mode alongside offload policy.
+
+### 2026-11-21
+
+- No new release. Reviewed [#5451](https://github.com/pytorch/torchtitan/pull/5451) and added a [truncation reward guide](docs/truncation-reward.md) with checked weighted-score and truncation-rate examples. Added a version note to the weight-sync guide after [#5235](https://github.com/pytorch/torchtitan/pull/5235) changed push scheduling on main.
+- Weekly summary. Published six updates this week covering weight sync, cross-layout transport, FLUX validation, reproducible configs, activation offload, and reward handling. Both smoke arms save their resolved configuration. Checks cover public source, local recipe fields, links, and hand-calculated examples. GPU measurements remain pending.
+- Next week: add a small CPU-executable rollout scheduling example to connect buffer depth, stragglers, and policy age, and pair it with explicit assumptions before interpreting any simulated throughput.

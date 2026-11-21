@@ -8,6 +8,8 @@ title: 权重同步耗时
 
 一次权重传输持续 3 秒，训练器可能只在某个同步点等 0.2 秒。要解释同步与异步 rollout 的性能差异，需要知道这 3 秒发生在哪一步，以及 0.2 秒落在哪条依赖上。以下以 TorchTitan v0.4.0 的 TitanRL 控制器为准。 [训练循环](https://github.com/pytorch/torchtitan/blob/v0.4.0/torchtitan/rl/controller/controller.py#L1175-L1256)
 
+主分支随后在 PR #5235 调整了顺序，让 push 在下一步前向反向发出前完成，避免训练器的事件循环推迟 push 回复。阅读新版本日志时，应重新核对等待点与计时范围。下文的时间线对应 v0.4.0。 [后续时序调整](https://github.com/pytorch/torchtitan/pull/5235)
+
 ## 从第 N 步更新到生成器加载权重
 
 训练器完成第 N 步的优化器更新后，控制器启动 push 和 pull 两个后台任务。Push 把训练器的 state dict 发布到 TorchStore。Pull 等 push 完成，随后要求生成器加载第 N 步权重。等所有生成器都加载完成，控制器才释放一批活跃 group 槽位，让新 group 进入。 [Push 和 pull 实现](https://github.com/pytorch/torchtitan/blob/v0.4.0/torchtitan/rl/controller/controller.py#L1265-L1292)
