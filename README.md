@@ -2,6 +2,8 @@
 
 中文学习资料见 [TitanRL 学习手册](docs/index.md)，涵盖 rollout 调度、策略滞后和吞吐测量。
 
+无需 GPU 即可运行 [CPU 调度实验](docs/cpu-scheduling.md)。在仓库根目录执行 `python3 simulate_scheduling.py`，比较慢任务、缓冲深度和策略年龄。
+
 ## Question
 
 When does overlapping rollout generation with policy updates improve end-to-end throughput, and what policy lag does that overlap introduce?
@@ -146,3 +148,8 @@ The patch targets public TorchTitan source. See the [upstream license](https://g
 - No new release. Reviewed [#5451](https://github.com/pytorch/torchtitan/pull/5451) and added a [truncation reward guide](docs/truncation-reward.md) with checked weighted-score and truncation-rate examples. Added a version note to the weight-sync guide after [#5235](https://github.com/pytorch/torchtitan/pull/5235) changed push scheduling on main.
 - Weekly summary. Published six updates this week covering weight sync, cross-layout transport, FLUX validation, reproducible configs, activation offload, and reward handling. Both smoke arms save their resolved configuration. Checks cover public source, local recipe fields, links, and hand-calculated examples. GPU measurements remain pending.
 - Next week: add a small CPU-executable rollout scheduling example to connect buffer depth, stragglers, and policy age, and pair it with explicit assumptions before interpreting any simulated throughput.
+
+### 2026-11-22
+
+- Added a deterministic CPU discrete-event scheduler, trace output, a documented three-group timeline, and nine scenario summaries. Kept generator workers fixed across buffer-depth comparisons and documented startup, finite-workload, and instantaneous-weight-sync assumptions.
+- Verified the serial closed form, a straggler completion-order case, and accounting/resource invariants across 81 parameter combinations. Published the [experiment and results](docs/cpu-scheduling.md). These are simulation results. GPU throughput and reward measurements remain pending.
