@@ -153,3 +153,9 @@ The patch targets public TorchTitan source. See the [upstream license](https://g
 
 - Added a deterministic CPU discrete-event scheduler, trace output, a documented three-group timeline, and nine scenario summaries. Kept generator workers fixed across buffer-depth comparisons and documented startup, finite-workload, and instantaneous-weight-sync assumptions.
 - Verified the serial closed form, a straggler completion-order case, and accounting/resource invariants across 81 parameter combinations. Published the [experiment and results](docs/cpu-scheduling.md). These are simulation results. GPU throughput and reward measurements remain pending.
+
+### 2026-11-23
+
+- Ran a [worker-count ablation](docs/cpu-worker-sweep.md) over 1, 2, and 4 workers at each buffer target, publishing nine measured simulation summaries and trace-derived peak generation concurrency. Checked the 59-second single-worker timeline and 26-second training lower bound.
+- No new release. Reviewed [Intel XPU support in the stock RL path](https://github.com/pytorch/torchtitan/pull/5402). The current CPU simulation uses the standard library; actual accelerator recipes still require their device-specific dependencies and configuration.
+- Existing scheduler tests passed. The next simulation step is nonzero weight synchronization at fixed worker count. GPU throughput and reward measurements remain pending.
