@@ -159,3 +159,9 @@ The patch targets public TorchTitan source. See the [upstream license](https://g
 - Ran a [worker-count ablation](docs/cpu-worker-sweep.md) over 1, 2, and 4 workers at each buffer target, publishing nine measured simulation summaries and trace-derived peak generation concurrency. Checked the 59-second single-worker timeline and 26-second training lower bound.
 - No new release. Reviewed [Intel XPU support in the stock RL path](https://github.com/pytorch/torchtitan/pull/5402). The current CPU simulation uses the standard library; actual accelerator recipes still require their device-specific dependencies and configuration.
 - Existing scheduler tests passed. The next simulation step is nonzero weight synchronization at fixed worker count. GPU throughput and reward measurements remain pending.
+
+### 2026-11-24
+
+- No new release. Reviewed [#6124](https://github.com/pytorch/torchtitan/pull/6124), which forwards failed weight pulls to the trainer's batch queue and gathers in-flight controller tasks at teardown. Added a [failure walkthrough](docs/pull-failure.md) and a CPU asyncio example that checks both a stranded consumer and propagation of the original exception.
+- Ran the example with asyncio debug checks and warnings treated as errors. It leaves no pending tasks at shutdown. Actual transport failures and remote actor cancellation remain untested locally.
+- Next: continue the scheduling model with explicit weight-sync latency, keeping this failure dependency in mind when deciding when slots are released.

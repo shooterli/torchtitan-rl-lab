@@ -19,5 +19,6 @@ title: TitanRL 学习手册
 | [截断奖励与部分得分](truncation-reward.md) | 生成被截断时，如何保留部分得分，又给未完成的回答扣分？ |
 | [CPU 调度实验](cpu-scheduling.md) | 实际运行一个慢任务案例，观察缓冲深度、等待与策略年龄怎样一起变化 |
 | [缓冲深度与生成并发的对照](cpu-worker-sweep.md) | 缓冲加深的收益有多少来自利用更多生成 worker？ |
+| [权重拉取失败为何会卡住训练](pull-failure.md) | 后台任务已经报错，训练器为什么还在等 batch？如何传播异常？ |
 
 每篇都可以先用纸笔算例，再跳到对应源码。项目仓库提供双组配置、固定生成并发上限的补丁和吞吐分析脚本。目前已有源码核对和合成日志验证，真实 GPU 测量待进行。 [实验代码和运行方法](https://github.com/shooterli/torchtitan-rl-lab#smoke-test)
