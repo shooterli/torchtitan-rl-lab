@@ -15,6 +15,7 @@ class Settings:
     slow_group: int = 0
     slow_multiplier: int = 6
     window_groups: int = 0
+    sync_time: int = 0
 
 
 def simulate(settings: Settings, target: int) -> dict:
@@ -22,6 +23,7 @@ def simulate(settings: Settings, target: int) -> dict:
     capacity = target + 1
     now = 0
     version = 0
+    generator_version = 0
     admitted = 0
     jobs = {}
     generating = []
@@ -36,10 +38,12 @@ def simulate(settings: Settings, target: int) -> dict:
             _, group_id = heapq.heappop(generating)
             jobs[group_id]["state"] = "ready"
         if training is not None and training["train_end"] == now:
-            trace.append(training)
-            training = None
             version += 1
-            last_train_end = now
+        if training is not None and training["sync_end"] == now:
+            generator_version = version
+            trace.append(training)
+            last_train_end = training["train_end"]
+            training = None
 
         while admitted < settings.groups and len(jobs) + (training is not None) < capacity:
             jobs[admitted] = {"group_id": admitted, "state": "waiting"}
@@ -54,7 +58,7 @@ def simulate(settings: Settings, target: int) -> dict:
                 if group_id == settings.slow_group:
                     duration *= settings.slow_multiplier
                 job.update(state="generating", generation_start=now,
-                           generation_end=now + duration, policy_version=version)
+                           generation_end=now + duration, policy_version=generator_version)
                 heapq.heappush(generating, (now + duration, group_id))
 
         if training is None and jobs:
@@ -68,12 +72,16 @@ def simulate(settings: Settings, target: int) -> dict:
                 training = jobs.pop(min(eligible))
                 training.pop("state")
                 training.update(train_start=now, train_end=now + settings.train_time,
+                                sync_end=now + settings.train_time + settings.sync_time,
                                 policy_age=version - training["policy_version"],
                                 batch_wait=now - last_train_end)
 
         future = [end for end, _ in generating]
         if training is not None:
-            future.append(training["train_end"])
+            if training["train_end"] > now:
+                future.append(training["train_end"])
+            else:
+                future.append(training["sync_end"])
         if future:
             now = min(future)
         elif len(trace) < settings.groups:
@@ -85,6 +93,7 @@ def simulate(settings: Settings, target: int) -> dict:
                 trainer_utilization=settings.groups * settings.train_time / now,
                 mean_policy_age=sum(ages) / len(ages), max_policy_age=max(ages),
                 batch_wait_seconds=sum(row["batch_wait"] for row in trace),
+                final_sync_seconds=settings.sync_time,
                 peak_active=peak_active, trace=trace)
 
 
@@ -94,6 +103,8 @@ def main() -> None:
     parser.add_argument("--workers", type=int, default=2)
     parser.add_argument("--generation-time", type=int, default=2)
     parser.add_argument("--train-time", type=int, default=1)
+    parser.add_argument("--sync-time", type=int, default=0,
+                        help="blocking weight sync after every update, including the last")
     parser.add_argument("--slow-group", type=int, default=0, help="-1 disables the straggler")
     parser.add_argument("--slow-multiplier", type=int, default=6)
     parser.add_argument("--window-groups", type=int, default=0, help="0 allows all ready groups")
@@ -106,8 +117,8 @@ def main() -> None:
         parser.error("counts and durations must be positive")
     if not -1 <= settings.slow_group < settings.groups:
         parser.error("slow-group must be -1 or a valid group id")
-    if settings.window_groups < 0 or min(args.targets) < 0:
-        parser.error("window-groups and targets must be nonnegative")
+    if settings.window_groups < 0 or settings.sync_time < 0 or min(args.targets) < 0:
+        parser.error("window-groups, sync-time, and targets must be nonnegative")
     results = [simulate(settings, target) for target in args.targets]
     if args.json:
         print(json.dumps(dict(settings=asdict(settings), results=results), indent=2))

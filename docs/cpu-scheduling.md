@@ -38,6 +38,8 @@ python3 -m unittest test_simulate_scheduling -v
 
 加上 `--json` 可查看每个 group 的 `generation_start`、`generation_end`、`train_start`、`train_end`、`policy_version`、`policy_age` 和 `batch_wait`。可用 `--groups`、`--workers`、`--generation-time`、`--train-time`、`--slow-multiplier` 改动假设。`--targets 0 1 3` 指定逐组比较的缓冲深度。
 
+`--sync-time` 可以加入每步更新后的阻塞权重同步时间，默认值为 0。设置正数时，JSON 还可用 `sync_end` 核对权重可见与槽位释放时刻。 [同步延迟的假设与结果](cpu-sync-latency.md)
+
 ## 24 个 group 的运行结果
 
 以下是实际运行本模拟得到的虚拟时间统计，包含启动与收尾。group/s 的分子为完成的 group 数，训练器忙碌比例为总训练时间除以总历时。年龄均值按消费的 group 等权计算。
@@ -73,7 +75,7 @@ python3 simulate_scheduling.py --groups 3 --targets 1 --slow-multiplier 3 --wind
 | 5–6 | group 2 训练，结束后版本变为 2 |
 | 6–7 | group 0 训练，采样版本为 0，消费时年龄为 2 |
 
-严格 FIFO 会等 group 0 先完成，训练顺序变为 0、1、2，总历时 10 秒，最大年龄为 1。测试把这个手算时间线、串行闭式结果和 81 组资源参数组合列为核对项，检查任务完整消费、训练互斥、worker 数与活跃槽位上限、年龄和时间记账。
+严格 FIFO 会等 group 0 先完成，训练顺序变为 0、1、2，总历时 10 秒，最大年龄为 1。测试把这个手算时间线、串行闭式结果和 243 组资源与同步参数组合列为核对项，检查任务完整消费、训练互斥、worker 数与活跃槽位上限、年龄和时间记账。
 
 该实验提供一个可以修改假设的调度案例。真实 TitanRL 的 token 吞吐、显存和奖励变化需要用对应的多卡作业测量。接下来可以加入非零权重同步时间，观察槽位释放延迟如何改变等待。
 

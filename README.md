@@ -165,3 +165,9 @@ The patch targets public TorchTitan source. See the [upstream license](https://g
 - No new release. Reviewed [#6124](https://github.com/pytorch/torchtitan/pull/6124), which forwards failed weight pulls to the trainer's batch queue and gathers in-flight controller tasks at teardown. Added a [failure walkthrough](docs/pull-failure.md) and a CPU asyncio example that checks both a stranded consumer and propagation of the original exception.
 - Ran the example with asyncio debug checks and warnings treated as errors. It leaves no pending tasks at shutdown. Actual transport failures and remote actor cancellation remain untested locally.
 - Next: continue the scheduling model with explicit weight-sync latency, keeping this failure dependency in mind when deciding when slots are released.
+
+### 2026-11-25
+
+- Added a blocking `--sync-time` stage to the CPU scheduler. Generator versions and active slots advance only when synchronization finishes. Trace records now include `sync_end`; runtime accounting includes the final synchronization.
+- Published [nine latency scenarios](docs/cpu-sync-latency.md). Verified all earlier zero-sync summaries, a serial closed form, delayed generator version visibility, and 243 resource/window/sync combinations.
+- Upstream remains at v0.4.0. Reviewed the current change list, including local and distributed CPU KV offload integrations (#5847 and #5727). These generator storage features are outside this synthetic scheduling model. GPU measurements remain pending.
