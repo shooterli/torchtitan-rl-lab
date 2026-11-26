@@ -42,3 +42,5 @@ Forward error: trainer raised the original pull failure.
 取消本地等待可以让控制器收尾，远端拉取 RPC 仍可能在 actor 销毁时运行。上游保留了这个后续问题。因此排查实际作业时，需要同时看原始拉取异常、batch 队列等待位置、控制器清理结果和远端进程状态。一个全局超时可以限制等待多久，异常传播则帮助定位哪一步先失败。 [修复中的清理说明](https://github.com/pytorch/torchtitan/pull/6124)
 
 本页已核对公开修复，并运行 CPU 异常传播示例。完整 TitanRL、多卡通信与远端取消行为待验证。
+
+后续 PR #6189 按每个 rank 的读取字节数计算超时，并分别记录失败生成器。 [继续阅读：权重读取的超时预算](weight-read-deadline.md)

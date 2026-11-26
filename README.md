@@ -171,3 +171,8 @@ The patch targets public TorchTitan source. See the [upstream license](https://g
 - Added a blocking `--sync-time` stage to the CPU scheduler. Generator versions and active slots advance only when synchronization finishes. Trace records now include `sync_end`; runtime accounting includes the final synchronization.
 - Published [nine latency scenarios](docs/cpu-sync-latency.md). Verified all earlier zero-sync summaries, a serial closed form, delayed generator version visibility, and 243 resource/window/sync combinations.
 - Upstream remains at v0.4.0. Reviewed the current change list, including local and distributed CPU KV offload integrations (#5847 and #5727). These generator storage features are outside this synthetic scheduling model. GPU measurements remain pending.
+
+### 2026-11-26
+
+- No new release. Reviewed [#6189](https://github.com/pytorch/torchtitan/pull/6189), which derives per-rank read deadlines from planned bytes and identifies failed generators. Added a [deadline guide](docs/weight-read-deadline.md) with checked byte-to-time examples, early logging versus final aggregation, and in-flight read cleanup implications.
+- Verified the public source paths, timing arithmetic, and internal documentation links. RDMA failure handling remains untested locally. Next: use explicit synchronization events in the simulator to study a bounded overlap model.
