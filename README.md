@@ -4,6 +4,8 @@
 
 无需 GPU 即可运行 [CPU 调度实验](docs/cpu-scheduling.md)。在仓库根目录执行 `python3 simulate_scheduling.py`，比较慢任务、缓冲深度和策略年龄。
 
+用 `python3 simulate_scheduling.py --sync-time 3 --overlap-sync` 运行 [有限同步重叠实验](docs/cpu-sync-overlap.md)，单独查看等 batch 与等参数更新的时间。所有结果均为 CPU 虚拟时间模拟。
+
 ## Question
 
 When does overlapping rollout generation with policy updates improve end-to-end throughput, and what policy lag does that overlap introduce?
@@ -176,3 +178,10 @@ The patch targets public TorchTitan source. See the [upstream license](https://g
 
 - No new release. Reviewed [#6189](https://github.com/pytorch/torchtitan/pull/6189), which derives per-rank read deadlines from planned bytes and identifies failed generators. Added a [deadline guide](docs/weight-read-deadline.md) with checked byte-to-time examples, early logging versus final aggregation, and in-flight read cleanup implications.
 - Verified the public source paths, timing arithmetic, and internal documentation links. RDMA failure handling remains untested locally. Next: use explicit synchronization events in the simulator to study a bounded overlap model.
+
+### 2026-11-27
+
+- Added opt-in one-sync overlap to the CPU scheduler. The next computation can run during the prior publication, but its update waits for that publication to finish. Slots remain occupied through synchronization; traces separate compute completion, update completion, and update wait.
+- Published [18 reproducible scenarios](docs/cpu-sync-overlap.md) and their CSV generator. At three-second sync and target 3, the simulated total falls from 98 to 75 seconds, with 45 seconds waiting to update and maximum policy age increasing from 3 to 4. These are synthetic results under independent-resource assumptions.
+- Verified six tests, including 1,458 parameter combinations and a hand-calculated 14-to-12-second example; rechecked all earlier result CSVs and documentation links. No GPU run. Next: separate trainer push from generator pull before modeling resource contention.
+- No new release (v0.4.0). Reviewed [#6321](https://github.com/pytorch/torchtitan/pull/6321), which compiles Qwen3.5 and Flash-Next gating regions. It does not change this CPU scheduler or the pinned Qwen3-0.6B recipe.

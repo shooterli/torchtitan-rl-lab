@@ -16,10 +16,11 @@ class Settings:
     slow_multiplier: int = 6
     window_groups: int = 0
     sync_time: int = 0
+    overlap_sync: bool = False
 
 
 def simulate(settings: Settings, target: int) -> dict:
-    """Slots cover generation, ready groups, and the single training step."""
+    """Slots remain active through a group's final weight publication."""
     capacity = target + 1
     now = 0
     version = 0
@@ -28,6 +29,7 @@ def simulate(settings: Settings, target: int) -> dict:
     jobs = {}
     generating = []
     training = None
+    syncing = None
     last_train_end = 0
     trace = []
     peak_active = 0
@@ -37,18 +39,28 @@ def simulate(settings: Settings, target: int) -> dict:
         while generating and generating[0][0] == now:
             _, group_id = heapq.heappop(generating)
             jobs[group_id]["state"] = "ready"
-        if training is not None and training["train_end"] == now:
-            version += 1
-        if training is not None and training["sync_end"] == now:
+        # Publish the older update before committing a new update at the same time.
+        if syncing is not None and syncing["sync_end"] == now:
             generator_version = version
-            trace.append(training)
+            trace.append(syncing)
+            syncing = None
+        if training is not None and training["train_end"] == now:
+            assert syncing is None, "only one weight synchronization may be in flight"
+            version += 1
             last_train_end = training["train_end"]
+            syncing = training
             training = None
+            if settings.sync_time == 0:
+                generator_version = version
+                trace.append(syncing)
+                syncing = None
 
-        while admitted < settings.groups and len(jobs) + (training is not None) < capacity:
+        active = len(jobs) + (training is not None) + (syncing is not None)
+        while admitted < settings.groups and active < capacity:
             jobs[admitted] = {"group_id": admitted, "state": "waiting"}
             admitted += 1
-        peak_active = max(peak_active, len(jobs) + (training is not None))
+            active += 1
+        peak_active = max(peak_active, active)
 
         for group_id, job in jobs.items():
             if len(generating) == settings.workers:
@@ -61,7 +73,7 @@ def simulate(settings: Settings, target: int) -> dict:
                            generation_end=now + duration, policy_version=generator_version)
                 heapq.heappush(generating, (now + duration, group_id))
 
-        if training is None and jobs:
+        if training is None and jobs and (settings.overlap_sync or syncing is None):
             head = min(jobs)
             eligible = [
                 group_id for group_id, job in jobs.items()
@@ -71,17 +83,22 @@ def simulate(settings: Settings, target: int) -> dict:
             if eligible:
                 training = jobs.pop(min(eligible))
                 training.pop("state")
-                training.update(train_start=now, train_end=now + settings.train_time,
-                                sync_end=now + settings.train_time + settings.sync_time,
+                compute_end = now + settings.train_time
+                # The next computation may overlap one sync, but its update waits
+                # for that sync to finish before it can start another publication.
+                train_end = max(compute_end, syncing["sync_end"] if syncing else 0)
+                training.update(train_start=now, compute_end=compute_end,
+                                train_end=train_end,
+                                sync_end=train_end + settings.sync_time,
+                                update_wait=train_end - compute_end,
                                 policy_age=version - training["policy_version"],
                                 batch_wait=now - last_train_end)
 
         future = [end for end, _ in generating]
         if training is not None:
-            if training["train_end"] > now:
-                future.append(training["train_end"])
-            else:
-                future.append(training["sync_end"])
+            future.append(training["train_end"])
+        if syncing is not None:
+            future.append(syncing["sync_end"])
         if future:
             now = min(future)
         elif len(trace) < settings.groups:
@@ -93,6 +110,7 @@ def simulate(settings: Settings, target: int) -> dict:
                 trainer_utilization=settings.groups * settings.train_time / now,
                 mean_policy_age=sum(ages) / len(ages), max_policy_age=max(ages),
                 batch_wait_seconds=sum(row["batch_wait"] for row in trace),
+                update_wait_seconds=sum(row["update_wait"] for row in trace),
                 final_sync_seconds=settings.sync_time,
                 peak_active=peak_active, trace=trace)
 
@@ -104,7 +122,9 @@ def main() -> None:
     parser.add_argument("--generation-time", type=int, default=2)
     parser.add_argument("--train-time", type=int, default=1)
     parser.add_argument("--sync-time", type=int, default=0,
-                        help="blocking weight sync after every update, including the last")
+                        help="weight sync after every update, including the last")
+    parser.add_argument("--overlap-sync", action="store_true",
+                        help="overlap the next computation with one in-flight weight sync")
     parser.add_argument("--slow-group", type=int, default=0, help="-1 disables the straggler")
     parser.add_argument("--slow-multiplier", type=int, default=6)
     parser.add_argument("--window-groups", type=int, default=0, help="0 allows all ready groups")
@@ -123,12 +143,12 @@ def main() -> None:
     if args.json:
         print(json.dumps(dict(settings=asdict(settings), results=results), indent=2))
     else:
-        print("target  seconds  groups/s  trainer_busy  age_mean  age_max  batch_wait")
+        print("target  seconds  groups/s  trainer_busy  age_mean  age_max  batch_wait  update_wait")
         for result in results:
             print(f"{result['target']:6}  {result['simulated_seconds']:7}  "
                   f"{result['groups_per_second']:8.3f}  {result['trainer_utilization']:12.1%}  "
                   f"{result['mean_policy_age']:8.3f}  {result['max_policy_age']:7}  "
-                  f"{result['batch_wait_seconds']:10}")
+                  f"{result['batch_wait_seconds']:10}  {result['update_wait_seconds']:11}")
 
 
 if __name__ == "__main__":
