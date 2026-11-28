@@ -6,6 +6,8 @@
 
 用 `python3 simulate_scheduling.py --sync-time 3 --overlap-sync` 运行 [有限同步重叠实验](docs/cpu-sync-overlap.md)，单独查看等 batch 与等参数更新的时间。所有结果均为 CPU 虚拟时间模拟。
 
+用 `python3 simulate_weight_stages.py` 运行 [push/pull 分阶段实验](docs/cpu-weight-stages.md)，在 batch 始终就绪的假设下核对优化器等待、发布等待与完整收尾时间。
+
 ## Question
 
 When does overlapping rollout generation with policy updates improve end-to-end throughput, and what policy lag does that overlap introduce?
@@ -185,3 +187,11 @@ The patch targets public TorchTitan source. See the [upstream license](https://g
 - Published [18 reproducible scenarios](docs/cpu-sync-overlap.md) and their CSV generator. At three-second sync and target 3, the simulated total falls from 98 to 75 seconds, with 45 seconds waiting to update and maximum policy age increasing from 3 to 4. These are synthetic results under independent-resource assumptions.
 - Verified six tests, including 1,458 parameter combinations and a hand-calculated 14-to-12-second example; rechecked all earlier result CSVs and documentation links. No GPU run. Next: separate trainer push from generator pull before modeling resource contention.
 - No new release (v0.4.0). Reviewed [#6321](https://github.com/pytorch/torchtitan/pull/6321), which compiles Qwen3.5 and Flash-Next gating regions. It does not change this CPU scheduler or the pinned Qwen3-0.6B recipe.
+
+### 2026-11-29 (delayed 2026-11-28 scheduled run)
+
+- Separated compute, optimizer, push, and pull in an independent always-ready-batch CPU model. Compared a conservative full-publication barrier, v0.4.0's split barriers, and the inline-push order at `cb790dd`. Documented that actor event-loop delays are outside this model.
+- Published [18 scenarios and closed forms](docs/cpu-weight-stages.md). With a one-second compute and optimizer and 24 updates, changing a three-second sync from all-push to one-second push plus two-second pull reduces the ideal split model from 97 to 74 virtual seconds. An instantaneous optimizer removes the combined-versus-split runtime difference.
+- Verified four new tests with 729 parameter/order combinations, all six existing scheduler tests, CSV reproduction, command examples, and local documentation links. Results are independent CPU simulations; no GPU measurements.
+- No new release (v0.4.0). Reviewed merged [#6428](https://github.com/pytorch/torchtitan/pull/6428), reverting a KV-offload change that had landed before its vLLM upgrade dependencies. Keep the pinned public release and environment together; this does not affect the standard-library models.
+- Weekly summary (Nov 23–29): published worker-count controls, failed-pull propagation, blocking sync latency, read deadlines, bounded overlap, and split push/pull timelines. The accumulated checks connect resource limits, policy visibility, error propagation, and wait attribution. Next: integrate split publication events with rollout slots before adding resource contention. This run started after midnight Beijing time; the commit uses its actual Nov 29 timestamp.

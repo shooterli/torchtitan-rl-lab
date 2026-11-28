@@ -35,3 +35,5 @@ title: 权重同步耗时
 如果显式等待很短但 `step_time_ratio/batch` 明显上升，可以结合生成器吞吐与 group 就绪时间排查。权重加载结束前，新 group 可能还进不了缓冲区，因而一部分影响会出现在等 batch 的时间里。当前结论来自公开源码与算例，GPU 样本待采集。 [槽位释放条件](https://github.com/pytorch/torchtitan/blob/v0.4.0/torchtitan/rl/controller/controller.py#L1280-L1292)
 
 如果训练器和生成器使用不同的分片布局，传输阶段还要决定在哪里重排张量。 [下一篇：跨布局的权重传输](weight-transport.md)
+
+可运行 [push/pull 分阶段 CPU 算例](cpu-weight-stages.md)，分别查看等旧 push、等旧 pull 和前台 push 的记账。这些理想时间线没有模拟真实 actor 事件循环的阻塞。

@@ -23,5 +23,6 @@ title: TitanRL 学习手册
 | [CPU 实验中的权重同步延迟](cpu-sync-latency.md) | 延迟发布权重与释放槽位后，深缓冲还能减少多少等待？ |
 | [权重读取的超时预算](weight-read-deadline.md) | 多大的权重该等多久？多个生成器失败时，什么时候报出哪一个？ |
 | [一次在途同步的 CPU 重叠实验](cpu-sync-overlap.md) | 计算提前开始后，等待是否转移到参数更新？槽位够用吗？ |
+| [分开 push 和 pull 后的等待](cpu-weight-stages.md) | 同样三秒同步，为何不同阶段会改变优化器的等待与重叠？ |
 
 每篇都可以先用纸笔算例，再跳到对应源码。项目仓库提供双组配置、固定生成并发上限的补丁和吞吐分析脚本。目前已有源码核对和合成日志验证，真实 GPU 测量待进行。 [实验代码和运行方法](https://github.com/shooterli/torchtitan-rl-lab#smoke-test)
